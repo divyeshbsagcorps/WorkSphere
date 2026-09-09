@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -21,42 +23,57 @@ export const Modal: React.FC<ModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const maxWidths = {
-    sm: 'modal-sm',
-    md: '',
-    lg: 'modal-lg',
-    xl: 'modal-xl',
-    '2xl': 'modal-xl',
+  const maxWidthClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-6xl',
   };
 
-  return (
-    <div className="modal fade show d-block z-50 bg-slate-900/40 backdrop-blur-xs" tabIndex={-1} role="dialog">
-      <div className={`modal-dialog modal-dialog-centered ${maxWidths[maxWidth]}`}>
-        <div className="modal-content bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="modal-header border-bottom border-slate-100 bg-slate-50/80 px-5 py-4">
-            <div>
-              <h5 className="modal-title font-bold text-slate-900 text-base m-0">{title}</h5>
-              {subtitle && <p className="text-xs text-slate-500 m-0 mt-0.5">{subtitle}</p>}
-            </div>
-            <button
-              type="button"
-              className="btn-close opacity-50 hover:opacity-100 cursor-pointer"
-              onClick={onClose}
-              aria-label="Close"
-            />
-          </div>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs overflow-y-auto animate-fadeIn">
+      {/* Backdrop overlay */}
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
-          {/* Content */}
-          <div className="modal-body p-5">{children}</div>
+      {/* Modal Dialog Box */}
+      <div
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden my-auto z-10 shrink-0`}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 m-0">{title}</h3>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5 m-0">{subtitle}</p>}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors border-0 bg-transparent cursor-pointer -mr-2"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Body */}
+        <div className="p-6 max-h-[calc(100vh-10rem)] overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

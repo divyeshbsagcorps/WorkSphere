@@ -5,10 +5,9 @@ import { fetchRequestsRequest, updateRequestStatusAction } from '@/features/requ
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
-import { Modal } from '@/components/common/Modal';
-import { Input } from '@/components/common/Input';
 import { ApprovalRequest } from '@/types';
-import { CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
+import { ApprovalDecisionModal } from '../components/ApprovalDecisionModal';
 
 export const ApprovalInbox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -127,43 +126,15 @@ export const ApprovalInbox: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation Modal with Comment */}
-      {activeReq && (
-        <Modal
-          isOpen={!!activeReq}
-          onClose={() => setActiveReq(null)}
-          title={`${actionType === 'APPROVE' ? 'Approve' : 'Reject'} Request ${activeReq.id}`}
-          subtitle={`Applicant: ${activeReq.employeeName} (${activeReq.department})`}
-        >
-          <div className="space-y-4">
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
-              <p className="font-bold text-slate-900 mb-1 m-0">{activeReq.title}</p>
-              <p className="m-0">{activeReq.description}</p>
-            </div>
-
-            <Input
-              label={actionType === 'APPROVE' ? 'Approval Comments (Optional)' : 'Rejection Reason (Required)'}
-              placeholder={actionType === 'APPROVE' ? 'e.g. Approved. Leave coverage verified.' : 'e.g. Budget limit exceeded.'}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              icon={<MessageSquare className="w-4 h-4" />}
-            />
-
-            <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-              <Button variant="ghost" size="sm" onClick={() => setActiveReq(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant={actionType === 'APPROVE' ? 'success' : 'danger'}
-                size="sm"
-                onClick={handleConfirmAction}
-              >
-                Confirm {actionType === 'APPROVE' ? 'Approval' : 'Rejection'}
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      {/* Confirmation Modal Component */}
+      <ApprovalDecisionModal
+        request={activeReq}
+        actionType={actionType}
+        comment={comment}
+        onCommentChange={setComment}
+        onClose={() => setActiveReq(null)}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 };

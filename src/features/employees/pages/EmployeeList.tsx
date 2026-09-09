@@ -11,11 +11,11 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/Select';
-import { Modal } from '@/components/common/Modal';
 import { Employee } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import { Search, UserPlus, Trash2, Eye, RefreshCw } from 'lucide-react';
 import { EmployeeFormModal } from '../components/EmployeeFormModal';
+import { DeleteEmployeeModal } from '../components/DeleteEmployeeModal';
 
 export const EmployeeList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -232,30 +232,11 @@ export const EmployeeList: React.FC = () => {
 
       <EmployeeFormModal isOpen={addModal.isOpen} onClose={addModal.closeModal} />
 
-      {deleteTarget && (
-        <Modal
-          isOpen={!!deleteTarget}
-          onClose={() => setDeleteTarget(null)}
-          title="Delete Employee Record"
-          subtitle="This action cannot be undone"
-          maxWidth="sm"
-        >
-          <div className="space-y-4 text-xs text-slate-600">
-            <p className="m-0">
-              Are you sure you want to permanently delete{' '}
-              <strong className="text-slate-900">{deleteTarget.name}</strong> ({deleteTarget.email})?
-            </p>
-            <div className="flex justify-end space-x-3 pt-2">
-              <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(null)}>
-                Cancel
-              </Button>
-              <Button variant="danger" size="sm" onClick={handleDeleteConfirm}>
-                Confirm Delete
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <DeleteEmployeeModal
+        employee={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };

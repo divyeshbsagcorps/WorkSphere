@@ -12,7 +12,6 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
-import { Modal } from '@/components/common/Modal';
 import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/Select';
 import { EmployeeDocument, DocumentCategory, DocumentStatus } from '@/types';
@@ -26,6 +25,8 @@ import {
   RefreshCw,
   FileCheck,
 } from 'lucide-react';
+
+import { DocumentStatusActionModal } from '../components/DocumentStatusActionModal';
 
 export const DocumentManagement: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -243,32 +244,15 @@ export const DocumentManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* HR Action Modal */}
-      {selectedDoc && actionType && (
-        <Modal
-          isOpen={!!selectedDoc}
-          onClose={() => setSelectedDoc(null)}
-          title={`Document Status Action: ${actionType}`}
-          subtitle={`Target: ${selectedDoc.name} (${selectedDoc.employeeName})`}
-        >
-          <div className="space-y-4">
-            <Input
-              label="Reason or Re-upload Note"
-              placeholder="e.g. Image scan is blurry. Please upload a clear original PDF."
-              value={rejectionNote}
-              onChange={(e) => setRejectionNote(e.target.value)}
-            />
-            <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-              <Button variant="ghost" size="sm" onClick={() => setSelectedDoc(null)}>
-                Cancel
-              </Button>
-              <Button variant="danger" size="sm" onClick={handleConfirmStatusChange}>
-                Submit Status
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      {/* HR Action Modal Component */}
+      <DocumentStatusActionModal
+        document={selectedDoc}
+        actionType={actionType}
+        note={rejectionNote}
+        onNoteChange={setRejectionNote}
+        onClose={() => setSelectedDoc(null)}
+        onConfirm={handleConfirmStatusChange}
+      />
     </div>
   );
 };

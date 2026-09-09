@@ -130,7 +130,7 @@ export const SurveyEngine: React.FC = () => {
             }
           }}
         >
-          {({ errors, touched }) => (
+          {({ values, errors, touched }) => (
             <Form className="space-y-6">
               <div className="space-y-1 mb-4">
                 <h3 className="text-base font-bold text-slate-900 m-0">{currentSection.title}</h3>
@@ -142,10 +142,15 @@ export const SurveyEngine: React.FC = () => {
               {/* Questions */}
               <div className="space-y-6">
                 {currentSection.questions.map((q) => (
-                  <div key={q.id} className="space-y-2 bg-slate-50/70 p-4 rounded-xl border border-slate-200">
-                    <label className="block text-xs font-bold text-slate-800 m-0">
-                      {q.label} {q.required && <span className="text-rose-600">*</span>}
-                    </label>
+                  <div key={q.id} className="space-y-3 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-900 m-0">
+                        {q.label} {q.required && <span className="text-rose-600">*</span>}
+                      </label>
+                      {q.helpText && (
+                        <p className="text-[11px] text-slate-500 mt-1 m-0">{q.helpText}</p>
+                      )}
+                    </div>
 
                     {q.type === 'text' && (
                       <Field
@@ -176,18 +181,42 @@ export const SurveyEngine: React.FC = () => {
                     )}
 
                     {q.type === 'radio' && q.options && (
-                      <div className="space-y-2 pt-1">
-                        {q.options.map((opt, i) => (
-                          <label key={i} className="flex items-center space-x-3 cursor-pointer text-xs text-slate-700">
-                            <Field
-                              type="radio"
-                              name={q.id}
-                              value={opt}
-                              className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span>{opt}</span>
-                          </label>
-                        ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                        {q.options.map((opt, i) => {
+                          const isSelected = values[q.id] === opt;
+                          const isOddLast = i === q.options.length - 1 && q.options.length % 2 !== 0;
+                          return (
+                            <label
+                              key={i}
+                              className={`group relative flex items-center p-3.5 rounded-xl border text-xs font-medium cursor-pointer transition-all duration-200 select-none ${
+                                isSelected
+                                  ? 'bg-indigo-50/80 border-indigo-600 text-indigo-950 shadow-xs ring-2 ring-indigo-500/20'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50/60'
+                              } ${isOddLast ? 'sm:col-span-2' : ''}`}
+                            >
+                              <Field
+                                type="radio"
+                                name={q.id}
+                                value={opt}
+                                className="sr-only"
+                              />
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mr-3 transition-all duration-200 ${
+                                  isSelected
+                                    ? 'border-indigo-600 bg-indigo-600 ring-2 ring-indigo-100'
+                                    : 'border-slate-300 bg-white group-hover:border-indigo-400'
+                                }`}
+                              >
+                                <div
+                                  className={`w-1.5 h-1.5 rounded-full bg-white transition-transform duration-200 ${
+                                    isSelected ? 'scale-100' : 'scale-0'
+                                  }`}
+                                />
+                              </div>
+                              <span className="leading-snug flex-1">{opt}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -207,18 +236,46 @@ export const SurveyEngine: React.FC = () => {
                     )}
 
                     {q.type === 'checkbox' && q.options && (
-                      <div className="space-y-2 pt-1">
-                        {q.options.map((opt, i) => (
-                          <label key={i} className="flex items-center space-x-3 cursor-pointer text-xs text-slate-700">
-                            <Field
-                              type="checkbox"
-                              name={q.id}
-                              value={opt}
-                              className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span>{opt}</span>
-                          </label>
-                        ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                        {q.options.map((opt, i) => {
+                          const isChecked = Array.isArray(values[q.id]) && values[q.id].includes(opt);
+                          const isOddLast = i === q.options.length - 1 && q.options.length % 2 !== 0;
+                          return (
+                            <label
+                              key={i}
+                              className={`group relative flex items-center p-3.5 rounded-xl border text-xs font-medium cursor-pointer transition-all duration-200 select-none ${
+                                isChecked
+                                  ? 'bg-indigo-50/80 border-indigo-600 text-indigo-950 shadow-xs ring-2 ring-indigo-500/20'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50/60'
+                              } ${isOddLast ? 'sm:col-span-2' : ''}`}
+                            >
+                              <Field
+                                type="checkbox"
+                                name={q.id}
+                                value={opt}
+                                className="sr-only"
+                              />
+                              <div
+                                className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 mr-3 transition-all duration-200 ${
+                                  isChecked
+                                    ? 'border-indigo-600 bg-indigo-600 text-white ring-2 ring-indigo-100'
+                                    : 'border-slate-300 bg-white group-hover:border-indigo-400'
+                                }`}
+                              >
+                                <svg
+                                  className={`w-3 h-3 stroke-current stroke-[2.5] transition-transform duration-200 ${
+                                    isChecked ? 'scale-100' : 'scale-0'
+                                  }`}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </div>
+                              <span className="leading-snug flex-1">{opt}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
 
